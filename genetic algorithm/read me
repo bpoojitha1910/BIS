@@ -1,13 +1,9 @@
-This code uses evolution to find a valid color scheme for 5 connected points (nodes) using 3 colors, ensuring no connected points share a color.
-Here is what happens:
+This Python script uses a Genetic Algorithm to solve the Graph Coloring Problem, aiming to color a network of nodes so that no connected nodes share the same color.
+Here is the code's execution flow in short:
 
-   1. Setup: It defines a map of connections (edges). If connected nodes share a color, a conflict occurs.
-   2. Initial Guesses (Gen 0): The program creates 30 random color arrangements (chromosomes).
-   3. Scoring (Fitness): It counts the conflicts for each arrangement and sorts them from best (fewest conflicts) to worst.
-   4. Evolution Loop: To make a better batch of guesses, it repeats these steps:
-   * Elitism: Copies the absolute best layout directly to the next generation so progress is never lost.
-      * Selection: Selects parents only from the top-performing layouts.
-      * Crossover: Combines the color choices of two parents to create a new "child" layout.
-      * Targeted Mutation: Finds the exact nodes causing conflicts and randomly changes their color to try and fix the error.
-   5. Termination: The loop runs until a layout achieves 0 conflicts (a perfect coloring) or hits the 15-generation limit.
+* Initialization: It sets up an initial population of random color configurations based on user inputs (nodes, connections, and color limits).
+* Selection & Crossover: In each generation, it sorts the population to find the best layouts. It picks two parents from the top 5 configurations and blends their colors 50/50 to create a child layout.
+* Targeted Mutation: If the new child layout has connected nodes with matching colors, there is a 30% chance the algorithm will step in and assign a brand-new random color to one of those conflicting nodes.
+* Output: It preserves the best-performing layout into the next generation. It stops early if it achieves a perfect, conflict-free layout and displays a visual map of the network using NetworkX and Matplotlib.
+
 
