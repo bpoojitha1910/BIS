@@ -1,0 +1,71 @@
+//code for implementing graph coloring using genetic algorithm
+
+import random
+
+def print_generation_status(gen, ind, edges):
+    """Prints the layout configuration and marks where conflicts occur."""
+    conflicts = []
+    for u, v in edges:
+        if ind[u] == ind[v]:
+            conflicts.append(f"({u}X{v})")
+            
+    conflict_str = ", ".join(conflicts) if conflicts else "None! [OK]"
+    print(f"  Gen {gen:2d} | Layout (Node:Color): " + 
+          " ".join([f"[{node}:{color}]" for node, color in enumerate(ind)]) + 
+          f" | Broken Edges: {conflict_str}")
+
+def genetic_graph_coloring(nodes, edges, max_colors, pop_size=30, max_gens=15):
+    # Initialize random population
+    pop = [[random.randint(0, max_colors - 1) for _ in range(nodes)] for _ in range(pop_size)]
+    get_conflicts = lambda ind: sum(1 for u, v in edges if ind[u] == ind[v])
+
+    print(f"\n--- Starting Evolution (Colors Allowed: {max_colors}) ---")
+    
+    for gen in range(max_gens):
+        pop.sort(key=get_conflicts) 
+        
+        # Track the best individual layout of this specific generation
+        best_current = pop[0]
+        print_generation_status(gen, best_current, edges)
+        
+        if get_conflicts(best_current) == 0:
+            print(f"[OK] Perfect valid coloring found early in generation {gen}!")
+            return best_current, True
+            
+        next_pop = [best_current] 
+        while len(next_pop) < pop_size:
+            p1, p2 = random.choice(pop[:5]), random.choice(pop[:5])
+            child = [random.choice([g1, g2]) for g1, g2 in zip(p1, p2)]
+            
+            conflicting_nodes = [n for u, v in edges if child[u] == child[v] for n in (u, v)]
+            if conflicting_nodes and random.random() < 0.3:
+                child[random.choice(conflicting_nodes)] = random.randint(0, max_colors - 1)
+                
+            next_pop.append(child)
+        pop = next_pop
+
+    pop.sort(key=get_conflicts)
+    return pop[0], get_conflicts(pop[0]) == 0
+
+# --- Execution Framework ---
+if __name__ == "__main__":
+    num_nodes = 5
+    # The layout map: 0 connects to 1, 1 to 2, etc. and a cross-cutting edge (0 to 2)
+    graph_edges = [(0, 1), (1, 2), (2, 3), (3, 4), (4, 0), (0, 2)] 
+    
+    print("====================================================")
+    print("GRAPH MAP CONNECTIONS:")
+    for u, v in graph_edges:
+        print(f"  Node {u} <----------> Node {v}")
+    print("====================================================")
+    
+    # Run optimization for a target color setting
+    target_colors = 3
+    best_layout, is_valid = genetic_graph_coloring(num_nodes, graph_edges, max_colors=target_colors)
+    
+    print("\n--- Final Summary ---")
+    if is_valid:
+        print(f"[OK] Successfully found a 0-conflict map using {target_colors} colors.")
+        print(f"Final Configuration Layout: {best_layout}")
+    else:
+        print(f"[FAIL] Could not clear all edge collisions within generation limits using {target_colors} colors.")
