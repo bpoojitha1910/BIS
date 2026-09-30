@@ -1,71 +1,98 @@
 //code for implementing graph coloring using genetic algorithm
 
 import random
+import networkx as nx
+import matplotlib.pyplot as plt
+
+COLOR_NAMES = ["Red", "Green", "Blue", "Yellow", "Orange", "Purple", "Pink", "Cyan", "Magenta"]
 
 def print_generation_status(gen, ind, edges):
-    """Prints the layout configuration and marks where conflicts occur."""
-    conflicts = []
-    for u, v in edges:
-        if ind[u] == ind[v]:
-            conflicts.append(f"({u}X{v})")
-            
+    conflicts = [f"({u}X{v})" for u, v in edges if ind[u] == ind[v]]
     conflict_str = ", ".join(conflicts) if conflicts else "None! [OK]"
-    print(f"  Gen {gen:2d} | Layout (Node:Color): " + 
-          " ".join([f"[{node}:{color}]" for node, color in enumerate(ind)]) + 
-          f" | Broken Edges: {conflict_str}")
+    layout_str = " ".join([f"[{node}:{COLOR_NAMES[color]}]" for node, color in enumerate(ind)])
+    print(f"  Gen {gen:2d} | Layout: {layout_str} | Broken Edges: {conflict_str}")
 
-def genetic_graph_coloring(nodes, edges, max_colors, pop_size=30, max_gens=15):
-    # Initialize random population
+def genetic_graph_coloring(nodes, edges, max_colors, pop_size=50, max_gens=20):
     pop = [[random.randint(0, max_colors - 1) for _ in range(nodes)] for _ in range(pop_size)]
     get_conflicts = lambda ind: sum(1 for u, v in edges if ind[u] == ind[v])
 
-    print(f"\n--- Starting Evolution (Colors Allowed: {max_colors}) ---")
-    
     for gen in range(max_gens):
-        pop.sort(key=get_conflicts) 
-        
-        # Track the best individual layout of this specific generation
-        best_current = pop[0]
-        print_generation_status(gen, best_current, edges)
-        
-        if get_conflicts(best_current) == 0:
-            print(f"[OK] Perfect valid coloring found early in generation {gen}!")
-            return best_current, True
-            
-        next_pop = [best_current] 
+        pop.sort(key=get_conflicts)
+        best_individual = pop[0] # Get the best individual from the sorted population
+        print_generation_status(gen, best_individual, edges)
+
+        if get_conflicts(best_individual) == 0:
+            return best_individual, True
+
+        next_pop = [best_individual] # Keep the best individual for the next generation
         while len(next_pop) < pop_size:
             p1, p2 = random.choice(pop[:5]), random.choice(pop[:5])
             child = [random.choice([g1, g2]) for g1, g2 in zip(p1, p2)]
-            
+
             conflicting_nodes = [n for u, v in edges if child[u] == child[v] for n in (u, v)]
             if conflicting_nodes and random.random() < 0.3:
                 child[random.choice(conflicting_nodes)] = random.randint(0, max_colors - 1)
-                
+
             next_pop.append(child)
         pop = next_pop
 
     pop.sort(key=get_conflicts)
+    # Return the best individual found and its validity status
     return pop[0], get_conflicts(pop[0]) == 0
 
-# --- Execution Framework ---
+def draw_colored_graph(nodes, edges, chromosome):
+    G = nx.Graph()
+    G.add_nodes_from(range(nodes))
+    G.add_edges_from(edges)
+
+    plot_colors = [COLOR_NAMES[color_idx].lower() for color_idx in chromosome]
+    pos = nx.spring_layout(G)  # Spring layout adapts better to dynamic graph structures
+
+    plt.figure(figsize=(6, 6))
+    nx.draw(G, pos, with_labels=True, node_color=plot_colors,
+            node_size=800, font_weight='bold', font_color='white', edge_color='gray')
+    plt.title(f"Graph Colored with {len(set(chromosome))} Colors")
+    plt.show()
+
+# --- Execution Setup with Live Terminal Inputs ---
 if __name__ == "__main__":
-    num_nodes = 5
-    # The layout map: 0 connects to 1, 1 to 2, etc. and a cross-cutting edge (0 to 2)
-    graph_edges = [(0, 1), (1, 2), (2, 3), (3, 4), (4, 0), (0, 2)] 
-    
-    print("====================================================")
-    print("GRAPH MAP CONNECTIONS:")
-    for u, v in graph_edges:
-        print(f"  Node {u} <----------> Node {v}")
-    print("====================================================")
-    
-    # Run optimization for a target color setting
-    target_colors = 3
-    best_layout, is_valid = genetic_graph_coloring(num_nodes, graph_edges, max_colors=target_colors)
-    
-    print("\n--- Final Summary ---")
+    print("=== DYNAMIC GRAPH COLORING CONFIGURATOR ===")
+
+    # 1. Input total number of nodes
+    num_nodes = int(input("Enter the total number of nodes (e.g., 5): "))
+
+    # 2. Input the connections (edges)
+    graph_edges = []
+    num_edges = int(input("Enter how many total connections (edges) you want to add: "))
+
+    print(f"\nNote: Node IDs range from 0 to {num_nodes - 1}.")
+    for i in range(num_edges):
+        while True: # Loop until valid input is received for the current edge
+            edge_input = input(f"  Enter edge {i+1} as 'nodeA nodeB' (e.g., 0 1): ")
+            try:
+                u, v = map(int, edge_input.split())
+                if 0 <= u < num_nodes and 0 <= v < num_nodes:
+                    graph_edges.append((u, v))
+                    break # Exit the while loop for this edge
+                else:
+                    print(f"  Error: Both node IDs must be between 0 and {num_nodes - 1}. Please try again.")
+            except ValueError:
+                print("  Error: Invalid input format. Please enter two integers separated by a space (e.g., '0 1').")
+
+    # 3. Input target color budget limit
+    target_colors = int(input("\nEnter the maximum number of colors allowed (e.g., 3): "))
+    if target_colors > len(COLOR_NAMES):
+        print(f"Limiting to maximum system supported palette size of {len(COLOR_NAMES)}.")
+        target_colors = len(COLOR_NAMES)
+
+    # 4. Input population size
+    population_size = int(input("\nEnter the population size for the genetic algorithm (e.g., 30): "))
+
+    print("\n--- Starting Evolution ---")
+    best_layout, is_valid = genetic_graph_coloring(num_nodes, graph_edges, max_colors=target_colors, pop_size=population_size)
+
     if is_valid:
-        print(f"[OK] Successfully found a 0-conflict map using {target_colors} colors.")
-        print(f"Final Configuration Layout: {best_layout}")
+        print("\n[OK] Success! Rendering visualization window...")
+        draw_colored_graph(num_nodes, graph_edges, best_layout)
     else:
-        print(f"[FAIL] Could not clear all edge collisions within generation limits using {target_colors} colors.")
+        print("\n[FAIL] Perfect coloring layout not achieved within generation limits.")
