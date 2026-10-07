@@ -1,0 +1,8 @@
+
+1. The Goal: The robot needs to go from a fixed Source to a fixed Destination through a set of middle locations with the lowest travel cost.
+2. The Swarm (The Particles): The code creates 30 virtual particles (agents). Each particle guesses a random sequence for the middle locations.
+3. The Score: The code checks the map's cost matrix to see how much energy/distance each guessed path requires.
+4. The PSO Brain (Social Learning): In every loop, particles adjust their guesses by pulling closer to:
+	• P_best: The best path that individual particle found.
+	• G_best: The absolute best path anyone in the entire swarm found.
+5. The Result: Over 60 iterations, the particles "fly" toward the best options, converge on the single cheapest route, and output it.
