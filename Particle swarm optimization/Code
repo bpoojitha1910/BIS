@@ -1,0 +1,94 @@
+*PROBLEM STATEMENT*
+#Particle Swarm Optimization for Function Optimization:
+#Particle Swarm Optimization (PSO) is inspired by the social behavior of birds flocking or fish schooling. PSO is
+#used to find optimal solutions by iteratively improving a candidate solution with regard to a given measure of
+#quality. Implement the PSO algorithm using Python to optimize a mathematical function.
+
+import numpy as np
+
+# 1. GET USER INPUT FOR CITIES AND EDGES
+try:
+    num_input = input("Enter the number of cities (e.g., 3, 4, 5): ")
+    NUM_CITIES = int(num_input)
+    if NUM_CITIES < 3:
+        print("A loop route requires at least 3 cities. Setting to 3.")
+        NUM_CITIES = 3
+except ValueError:
+    print("Invalid number entered. Defaulting to 3.")
+    NUM_CITIES = 3
+
+# Create an empty cost matrix grid
+COST_MATRIX = np.zeros((NUM_CITIES, NUM_CITIES))
+
+print(f"\n--- Enter Edge Costs for {NUM_CITIES} Cities ---")
+print("Note: Cost from a city to itself is automatically 0.")
+
+# Ask user for the cost of each path connection
+for i in range(NUM_CITIES):
+    for j in range(NUM_CITIES):
+        if i == j:
+            COST_MATRIX[i][j] = 0
+        else:
+            try:
+                edge_cost = input(f"Enter cost from City {i} to City {j}: ")
+                COST_MATRIX[i][j] = float(edge_cost)
+            except ValueError:
+                print("Invalid input. Setting edge cost to a default of 10.")
+                COST_MATRIX[i][j] = 10.0
+
+# PSO Hyperparameters
+POP_SIZE = 30
+MAX_ITER = 60
+W, C1, C2 = 0.5, 1.5, 1.5
+
+# Setup Particles (Dimensions = remaining cities to visit)
+DIMS = NUM_CITIES - 1
+X = np.random.rand(POP_SIZE, DIMS)
+V = np.zeros_like(X)
+
+p_best = np.copy(X)
+p_best_fit = np.array([999999.0] * POP_SIZE)
+g_best = np.zeros(DIMS)
+g_best_fit = 999999.0
+g_fit_tour = []
+
+# Helper function to convert particle positions into a clean city sequence loop
+def get_tour(particle_values):
+    intermediate_sequence = np.argsort(particle_values) + 1
+    # Create complete loop sequence starting and ending at index 0
+    full_tour = [0] + list(intermediate_sequence) + [0]
+    return full_tour
+
+# 2. CORE OPTIMIZATION LOOP
+for _ in range(MAX_ITER):
+    for i in range(POP_SIZE):
+        tour = get_tour(X[i])
+        
+        # Calculate the path cost by adding up individual edge costs from the matrix
+        current_cost = 0.0
+        for j in range(len(tour) - 1):
+            from_city = tour[j]
+            to_city = tour[j+1]
+            current_cost += COST_MATRIX[from_city][to_city]
+            
+        # Update Personal & Global Best Path Records
+        if current_cost < p_best_fit[i]:
+            p_best[i], p_best_fit[i] = X[i], current_cost
+            if current_cost < g_best_fit:
+                g_best = np.copy(X[i])
+                g_best_fit = current_cost
+                g_fit_tour = tour
+                
+    # Particle Swarm Motion Math
+    r1 = np.random.rand(POP_SIZE, DIMS)
+    r2 = np.random.rand(POP_SIZE, DIMS)
+    V = W * V + C1 * r1 * (p_best - X) + C2 * r2 * (g_best - X)
+    X = X + V
+
+# 3. DISPLAY FINAL OPTIMAL PATH RESULTS
+print("\n==============================================")
+print("         ROBOT PATH PLANNING RESULTS          ")
+print("==============================================")
+print(f"Optimal Sequence : {' -> '.join(map(str, g_fit_tour))}")
+print(f"Minimum Edge Cost: {int(g_best_fit)} total units")
+print("==============================================")
