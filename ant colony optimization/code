@@ -1,0 +1,59 @@
+import random
+
+# Items: (weight, value)
+items = [(2, 3), (3, 4), (4, 5), (5, 8), (9, 10)]
+
+capacity = 10
+ants = 10
+iterations = 50
+
+pheromone = [1] * len(items)
+
+best_solution = []
+best_value = 0
+
+for _ in range(iterations):
+
+    for ant in range(ants):
+
+        solution = [0] * len(items)
+        weight = 0
+        value = 0
+
+        for i in range(len(items)):
+
+            w, v = items[i]
+
+            if weight + w <= capacity:
+
+                probability = pheromone[i] / sum(pheromone)
+
+                if random.random() < probability:
+                    solution[i] = 1
+                    weight += w
+                    value += v
+
+        # Update best solution
+        if value > best_value:
+            best_value = value
+            best_solution = solution.copy()
+
+    # Update pheromones
+    for i in range(len(items)):
+        pheromone[i] *= 0.5
+
+    for i in range(len(items)):
+        if best_solution and best_solution[i] == 1:
+            pheromone[i] += best_value / 10
+
+# Display result
+print("Best Solution:", best_solution)
+print("Selected Items:", [
+    i + 1 for i in range(len(items))
+    if best_solution[i] == 1
+])
+print("Maximum Value:", best_value)
+print("Total Weight:", sum(
+    best_solution[i] * items[i][0]
+    for i in range(len(items))
+))
