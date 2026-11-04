@@ -1,3 +1,5 @@
+#This code implements the Ant Colony Optimization (ACO) algorithm to solve the 0/1 Knapsack Problem.
+
 import random
 
 # Items: (weight, value)
