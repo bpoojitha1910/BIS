@@ -1,0 +1,7 @@
+1. The Goal: The ant needs to find the shortest possible route that visits all cities and returns to the starting city.
+2. The Swarm (The Ants): The code creates multiple ants, and each ant starts from a city and builds a possible route.
+3. The Score: The code calculates the total distance travelled by each ant using the distances between cities.
+4. The ACO Brain (Pheromone Learning): Ants choose their next city based on:
+- Pheromone: Paths that were successful in previous iterations.
+- Heuristic Information: Shorter distances are more preferable.
+5. The Result: Over multiple iterations, pheromones are updated to encourage shorter routes, and the algorithm outputs the best route and its total distance.
