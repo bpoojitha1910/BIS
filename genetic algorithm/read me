@@ -1,6 +1,5 @@
-This Python script uses a Genetic Algorithm to solve the Graph Coloring Problem, aiming to color a network of nodes so that no connected nodes share the same color.
+Genetic Algorithm to solve the Graph Coloring Problem, aiming to color a network of nodes so that no connected nodes share the same color.
 Here is the code's execution flow in short:
-
 * Initialization: It sets up an initial population of random color configurations based on user inputs (nodes, connections, and color limits).
 * Selection & Crossover: In each generation, it sorts the population to find the best layouts. It picks two parents from the top 5 configurations and blends their colors 50/50 to create a child layout.
 * Targeted Mutation: If the new child layout has connected nodes with matching colors, there is a 30% chance the algorithm will step in and assign a brand-new random color to one of those conflicting nodes.
