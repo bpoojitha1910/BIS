@@ -1,0 +1,6 @@
+The Cuckoo Search algorithm is used to optimize resource allocation among multiple projects. 
+1.Initially, random nests are generated, where each nest represents a possible resource allocation.
+2.The fitness function evaluates the quality of each allocation. 
+3.New solutions are generated using Lévy flights.
+4.The worst-performing nests are abandoned and replaced with new solutions. This process continues for a fixed number of iterations. 
+5.Finally, the algorithm outputs the best resource allocation and its corresponding fitness value.
