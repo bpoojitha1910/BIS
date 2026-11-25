@@ -1,0 +1,102 @@
+import numpy as np
+
+# Electricity rates for 4 time slots
+rates = [4, 6, 8, 5]
+
+# Energy consumed by appliances (kWh per operation)
+energy = [6, 1, 3.6]  # AC, Washer, Heater
+
+# Number of wolves and iterations
+n = 10
+iterations = 50
+
+# 3 dimensions: AC, Washer, Heater
+lb, ub = 0, 3
+
+# Fitness function
+def fitness(x):
+    slots = np.round(x).astype(int)
+
+    # Washing machine cannot operate in slot 0
+    if slots[1] == 0:
+        return 1000
+
+    # Heater can operate only in slot 0 or slot 3
+    if slots[2] not in [0, 3]:
+        return 1000
+
+    cost = 0
+
+    for i in range(3):
+        cost += energy[i] * rates[slots[i]]
+
+    return cost
+
+
+# Initialize wolves
+wolves = np.random.uniform(lb, ub, (n, 3))
+
+alpha, beta, delta = None, None, None
+alpha_fit = beta_fit = delta_fit = float('inf')
+
+for t in range(iterations):
+
+    # Evaluate wolves
+    for wolf in wolves:
+        f = fitness(wolf)
+
+        if f < alpha_fit:
+            delta, delta_fit = beta, beta_fit
+            beta, beta_fit = alpha, alpha_fit
+            alpha, alpha_fit = wolf.copy(), f
+
+        elif f < beta_fit:
+            delta, delta_fit = beta, beta_fit
+            beta, beta_fit = wolf.copy(), f
+
+        elif f < delta_fit:
+            delta, delta_fit = wolf.copy(), f
+
+    # Decrease exploration parameter
+    a = 2 - 2 * t / iterations
+
+    # Update wolf positions
+    for i in range(n):
+
+        X = wolves[i].copy()
+
+        A1 = 2 * a * np.random.random(3) - a
+        C1 = 2 * np.random.random(3)
+        X1 = alpha - A1 * abs(C1 * alpha - X)
+
+        A2 = 2 * a * np.random.random(3) - a
+        C2 = 2 * np.random.random(3)
+        X2 = beta - A2 * abs(C2 * beta - X)
+
+        A3 = 2 * a * np.random.random(3) - a
+        C3 = 2 * np.random.random(3)
+        X3 = delta - A3 * abs(C3 * delta - X)
+
+        wolves[i] = (X1 + X2 + X3) / 3
+
+        # Keep positions within limits
+        wolves[i] = np.clip(wolves[i], lb, ub)
+
+
+# Output results
+slots = np.round(alpha).astype(int)
+
+time_slots = [
+    "6 AM - 10 AM",
+    "10 AM - 2 PM",
+    "2 PM - 6 PM",
+    "6 PM - 10 PM"
+]
+
+appliances = ["AC", "Washing Machine", "Water Heater"]
+
+print("Optimal Schedule:")
+for i in range(3):
+    print(appliances[i], ":", time_slots[slots[i]])
+
+print("Minimum Electricity Cost: Rs.", alpha_fit)
