@@ -1,0 +1,39 @@
+import random
+
+jobs = ["J1", "J2", "J3", "J4", "J5"]
+machines = [1, 1, 2, 2, 3]  # Machine required for each job
+slots = list(range(5))
+
+N, ITER = 9, 100
+
+# Initialize cells (each cell is a schedule)
+cells = [[random.choice(slots) for _ in jobs] for _ in range(N)]
+
+# Fitness: count machine conflicts
+def fitness(x):
+    return sum(1 for i in range(len(jobs)) for j in range(i+1, len(jobs))
+               if x[i] == x[j] and machines[i] == machines[j])
+
+# Neighbors in a ring
+def neighbors(i):
+    return [(i-1) % N, (i+1) % N]
+
+best = min(cells, key=fitness)
+
+# PCA iterations
+for _ in range(ITER):
+    new = []
+    for i in range(N):
+        nb = min([cells[j] for j in neighbors(i)], key=fitness)
+        x = nb.copy()
+        a, b = random.sample(range(len(jobs)), 2)
+        x[a], x[b] = x[b], x[a]
+        new.append(x if fitness(x) < fitness(cells[i]) else cells[i])
+    cells = new
+    best = min(cells + [best], key=fitness)
+
+# Output
+print("Best Fitness:", fitness(best))
+print("\nJob Schedule:")
+for i, job in enumerate(jobs):
+    print(f"{job} -> Slot {best[i]} (Machine {machines[i]})")
