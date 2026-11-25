@@ -1,0 +1,5 @@
+Problem Statement: Household Electricity Cost Optimization using Grey Wolf Optimizer
+The aim of this project is to optimize household electricity consumption by scheduling electrical appliances during time slots with lower electricity tariffs. 
+Appliances such as air conditioners, washing machines and water heaters consume varying amounts of energy and contribute to the overall electricity bill. 
+The system uses the Grey Wolf Optimizer (GWO) algorithm to find an optimal operating schedule for these appliances while satisfying their operating constraints.
+The objective is to minimize the total electricity cost by intelligently allocating appliance usage across different time slots, thereby reducing household electricity expenses.
