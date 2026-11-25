@@ -1,0 +1,6 @@
+Problem Statement – Job Scheduling
+The problem is to assign a set of jobs to different time slots based on the machines required to execute them. 
+Multiple jobs may be scheduled simultaneously only if they use different machines. 
+The goal is to find an optimal schedule that minimizes machine conflicts, ensuring that no two jobs requiring the same machine are assigned to the same time slot.
+
+Parallel Cellular Algorithm (PCA) is used to explore multiple schedules simultaneously and find a schedule with minimum conflicts.
